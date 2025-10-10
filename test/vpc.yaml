@@ -1,0 +1,81 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is about the VPC construction
+Resources: 
+  MyNewVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: AlphaTauri
+  
+  FirstSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-southeast-1a
+      VpcId: !Ref MyNewVPC
+      CidrBlock: 10.0.0.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Pubsub1
+
+  secondSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-southeast-1b
+      VpcId: !Ref MyNewVPC
+      CidrBlock: 10.0.1.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: Pubsub2
+  
+  MyGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: NewIGway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MyNewVPC
+      InternetGatewayId: !Ref MyGateway
+
+  PublicRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MyNewVPC
+      Tags:
+        - Key: Name
+          Value: PublicRT
+  
+  PublicRoutes:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref MyGateway
+
+  PublicRTassoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref FirstSubnet
+      RouteTableId: !Ref PublicRT
+
+  PublicRTassoc2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref secondSubnet
+      RouteTableId: !Ref PublicRT
+
+Outputs:
+  MyNewVPC:
+    Description: This is about the VPC
+    Value: !Ref MyNewVPC
+  
+  SubnetId:
+    Description: This is about the subnet 
+    Value: !Ref FirstSubnet

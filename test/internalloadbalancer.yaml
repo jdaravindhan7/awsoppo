@@ -1,0 +1,83 @@
+  AWSTemplateFormatVersion: 2010-09-09
+  Description: The internal and internet facing load balancer
+
+  Resources: 
+    internetfacingLB:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Scheme: internet-facing
+        SecurityGroups:
+          - sg-03758134b602cccc5
+        Subnets:
+          - subnet-06c0e40a8133fc4a4
+          - subnet-0f3431683de89216d
+        Type: application
+        IpAddressType: ipv4
+    
+    internetALBlistner1:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref MyTargetGroup1
+        LoadBalancerArn: !GetAtt internetfacingLB.LoadBalancerArn
+        Port: 80
+        Protocol: HTTP
+    
+    MyTargetGroup1:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: newinternetfacing
+        VpcId: vpc-01b60c76151b3b905
+        Protocol: HTTP
+        Port: 80
+        TargetType: instance
+        HealthCheckProtocol: HTTP
+        HealthCheckPath: /
+        HealthCheckIntervalSeconds: 20
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 3
+    
+    internalALB:
+      Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+      Properties:
+        Scheme: internal
+        SecurityGroups:
+          - sg-01e19c18f2e766ac8
+        Subnets:
+          - subnet-06c0e40a8133fc4a4
+          - subnet-0f3431683de89216d 
+        Type: application
+        IpAddressType: ipv4
+    
+    internetALBlistner2:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: !Ref MyTargetGroup2
+        LoadBalancerArn: !GetAtt internalALB.LoadBalancerArn
+        Port: 80
+        Protocol: HTTP
+    
+    MyTargetGroup2:
+      Type: AWS::ElasticLoadBalancingV2::TargetGroup
+      Properties:
+        Name: InternalLB
+        VpcId: vpc-01b60c76151b3b905
+        Protocol: HTTP
+        Port: 80
+        TargetType: instance
+        HealthCheckProtocol: HTTP
+        HealthCheckPath: /
+        HealthCheckIntervalSeconds: 20
+        HealthCheckTimeoutSeconds: 5
+        HealthyThresholdCount: 3
+        UnhealthyThresholdCount: 3
+
+
+  Outputs:
+    internetfLB:
+      Description: This is about the internetfacing loadbalancer
+      Value: !Ref internetfacingLB

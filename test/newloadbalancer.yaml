@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The Description is about the loadbalancer
+
+Resources: 
+  Myapploadbalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      SecurityGroups:
+        - !Ref LBsecurity
+      Type: application
+      IpAddressType: ipv4
+      Subnets:
+        - subnet-0f3431683de89216d
+        - subnet-06c0e40a8133fc4a4
+  
+  LBsecurity:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: LBGuard
+      GroupDescription: guardianSG
+      VpcId: vpc-01b60c76151b3b905
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+      Tags:
+        - Key: Name
+          Value: guardianSG
+  
+  MyTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: MyTargetforLoadbalancer
+      VpcId: vpc-01b60c76151b3b905
+      Protocol: HTTP
+      Port: 80
+      TargetType: instance
+      HealthCheckProtocol: HTTP
+      HealthCheckPath: /
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+  
+  MyALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref Myapploadbalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref MyTargetGroup
+
+          
+
+Outputs:
+  LoadBalancer:
+    Description: This is about the Load LoadBalancer
+    Value: !Ref Myapploadbalancer

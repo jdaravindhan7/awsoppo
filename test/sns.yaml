@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Alert sns notificatio to sent to the user
+
+Resources: 
+  MySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: AWSmonitoring
+      TopicName: Restartsns
+  
+  Mysnssubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref MySNSTopic
+      Protocol: email
+      Endpoint: aravindhpartha77@gmail.com
+      Region: ap-southeast-1
+
+Outputs:
+  MySNSTopic:
+    Description:  This is about the sns Topic creation
+    Value: !Ref MySNSTopic

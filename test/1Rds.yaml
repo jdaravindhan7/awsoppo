@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is for practicing the RDS instance creation using cloudformation
+
+Parameters: 
+  VPCvalue:
+    Description: This is the vpc we use here
+    Type: AWS::EC2::VPC::Id
+
+  SecurityIdhere:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: This is the security group inbound
+    Default: sg-060d80a071c4b0489
+
+Resources: 
+  MyRdssubnet:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: This is the subnet group
+      SubnetIds:
+        - subnet-038b1868597794b54
+        - subnet-0e3d6b854a47832b4
+      Tags:
+        - Key: Name
+          Value: Rdssubnet
+
+  RDSsecurity:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: RDSsecurity
+      GroupDescription: Nothingtosayhere
+      VpcId: !Ref VPCvalue
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref SecurityIdhere
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: RDSsecuritygroup
+
+  MyRdsStorage:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      AllowMajorVersionUpgrade: true
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: 4
+      DBInstanceIdentifier: TVKrds
+      DBName: SilverstoneGP
+      DBSubnetGroupName: !Ref MyRdssubnet
+      Engine: mysql
+      EngineVersion: 8.0.42
+      KmsKeyId: arn:aws:kms:ap-southeast-1:801681997870:key/be8adaef-a1dd-4c6d-90b8-d33b040d036e 
+      MasterUsername: admin
+      MasterUserPassword: Arav007!msd
+      MultiAZ: false
+      Port: 3306
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: gp2
+      VPCSecurityGroups:
+        - !Ref RDSsecurity
+      Tags:
+        - Key: Name
+          Value: Bottleneck
+
+Outputs:
+  VpcId:
+    Description: This is the VPC
+    Value: !Ref MyRdsStorage
